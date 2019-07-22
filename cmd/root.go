@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
@@ -30,7 +31,20 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.Flags().String()
+
+	testF := pflag.Flag{}
+	testF.Name = "testaaa"
+	// testF.Shorthand = "tt"
+	testF.Usage = "this is test usage"
+	testF.DefValue = "1"
+	rootCmd.Flags().AddFlag(&testF)
+
+	rootCmd.Flags().StringP("method", "M", "GET", "HTTP Method, default to GET")
+	rootCmd.Flags().StringP("url", "U", "", "Call URL, start with http:// or https://")
+	rootCmd.Flags().StringSlice("headers", []string{}, "Request Headers, e.g. color=black")
+	rootCmd.Flags().StringSliceP("cookies", "C", []string{}, "Request with cookies, e.g. name=jack")
+	rootCmd.Flags().StringSliceP("params", "P", []string{}, "Reuqest with params, form/url params/post data")
+	rootCmd.MarkFlagRequired("url")
 }
 
 func initConfig() {
@@ -41,22 +55,54 @@ func initConfig() {
 }
 
 func run(cmd *cobra.Command, args []string) {
+	// required flags
+	method := cmd.Flag("method")
+	callURL := cmd.Flag("url")
+	postParam := url.Values{}
+	params, _ := cmd.Flags().GetStringSlice("params")
+
+	// Posted data
+	for _, param := range params {
+		kvParam := strings.SplitN(param, "=", 2)
+		if len(kvParam) == 2 {
+			postParam.Set(kvParam[0], kvParam[1])
+		} else if len(kvParam) == 1 {
+			postParam.Set(kvParam[0], "")
+		}
+	}
+
 	// Method URL Headers Cookies Params
 	client := &http.Client{}
+	req, err := http.NewRequest(method.Value.String(), callURL.Value.String(), strings.NewReader(postParam.Encode()))
 
-	postParam := url.Values{
-		"a": {"1"},
-		"b": {"2"},
+	// Cookies setting
+	cookies, _ := cmd.Flags().GetStringSlice("cookies")
+	for _, cookie := range cookies {
+		kvCookie := strings.SplitN(cookie, "=", 2)
+		if len(kvCookie) == 2 {
+			req.AddCookie(&http.Cookie{
+				Name:  kvCookie[0],
+				Value: kvCookie[1],
+			})
+		}
 	}
-	postParam.Set("c", "3")
 
-	req, err := http.NewRequest("GET", "http://10.96.110.34:8086/dcs", strings.NewReader(postParam.Encode()))
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+	// Headers setting
+	headers, _ := cmd.Flags().GetStringSlice("headers")
+
+	for _, headerStr := range headers {
+		kvSlice := strings.SplitN(headerStr, "=", 2)
+		if len(kvSlice) == 2 {
+			req.Header.Set(kvSlice[0], kvSlice[1])
+		} else if len(kvSlice) == 1 {
+			req.Header.Set(kvSlice[0], "")
+		}
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {

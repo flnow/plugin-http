@@ -1,2 +1,5 @@
-# plugin-http
-example of flnow plug-in, and it's a http call plug-in
+# Flnow HTTP Plug-in
+A http plug-in for Flnow
+
+## TODO
+[ ]File upload
