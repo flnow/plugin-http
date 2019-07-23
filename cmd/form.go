@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +18,9 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-
+		fields := RawData()
+		b, _ := json.Marshal(fields)
+		fmt.Println(string(b))
 	},
 }
 
@@ -35,9 +40,13 @@ func init() {
 
 // Field to descript field of a Form
 type Field struct {
-	Name     string `json:"name"`
-	Value    string `json:"value"`
-	Required bool   `json:"required"`
-	Type     string `json:"type"`
-	Array    bool   `json:"array"`
+	Display     string `json:"display"`
+	Name        string `json:"name"`
+	ShortName   string `json:"short"`
+	Default     string `json:"default"`
+	Description string `json:"description"`
+	Value       string `json:"value"`
+	Required    bool   `json:"required"`
+	Type        string `json:"type"`
+	Array       bool   `json:"array"`
 }

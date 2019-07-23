@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
@@ -29,15 +28,60 @@ func Execute() {
 	}
 }
 
+// RawData of Command and Form UI
+func RawData() []Field {
+	raw := []Field{
+		Field{
+			Display:     "HTTP Method",
+			Name:        "method",
+			ShortName:   "M",
+			Default:     "GET",
+			Description: "HTTP Method, default to GET",
+			Required:    false,
+			Type:        "string",
+			Array:       false,
+		},
+		Field{
+			Display:     "URL",
+			Name:        "url",
+			ShortName:   "U",
+			Description: "Call URL, start with http:// or https://",
+			Required:    true,
+			Type:        "string",
+			Array:       false,
+		},
+		Field{
+			Display:     "Headers",
+			Name:        "headers",
+			Description: "Request Headers, e.g. color=black",
+			Required:    false,
+			Type:        "string",
+			Array:       true,
+		},
+		Field{
+			Display:     "Cookies",
+			Name:        "cookies",
+			ShortName:   "C",
+			Description: "Request with cookies, e.g. name=jack",
+			Required:    false,
+			Type:        "string",
+			Array:       true,
+		},
+		Field{
+			Display:     "Parameters",
+			Name:        "params",
+			ShortName:   "P",
+			Description: "Reuqest with params, form/url params/post data",
+			Required:    false,
+			Type:        "string",
+			Array:       true,
+		},
+	}
+	return raw
+}
+
 func init() {
 	cobra.OnInitialize(initConfig)
-
-	testF := pflag.Flag{}
-	testF.Name = "testaaa"
-	// testF.Shorthand = "tt"
-	testF.Usage = "this is test usage"
-	testF.DefValue = "1"
-	rootCmd.Flags().AddFlag(&testF)
 
 	rootCmd.Flags().StringP("method", "M", "GET", "HTTP Method, default to GET")
 	rootCmd.Flags().StringP("url", "U", "", "Call URL, start with http:// or https://")

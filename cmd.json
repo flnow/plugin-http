@@ -1,0 +1,48 @@
+[
+    {
+        "name": "method",
+        "short": "M",
+        "default": "GET",
+        "description": "HTTP Method, default to GET",
+        "required": false,
+        "type": "string",
+        "array": false
+    },
+    {
+        "name": "url",
+        "short": "U",
+        "default": "",
+        "description": "Call URL, start with http:// or https://",
+        "required": true,
+        "type": "string",
+        "array": false
+    },
+    {
+        "name": "headers",
+        "short": "",
+        "default": "",
+        "description": "Request Headers, e.g. color=black",
+        "required": false,
+        "type": "string",
+        "array": true
+    },
+    {
+        "name": "cookies",
+        "short": "C",
+        "default": "",
+        "description": "equest with cookies, e.g. name=jack",
+        "required": false,
+        "type": "string",
+        "array": true
+    },
+    {
+        "name": "params",
+        "short": "P",
+        "default": "",
+        "description": "Reuqest with params, form/url params/post data",
+        "required": false,
+        "type": "string",
+        "array": true
+    }
+]
+// Deprecated
