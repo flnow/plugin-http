@@ -43,6 +43,7 @@ type Field struct {
 	Display     string `json:"display"`
 	Name        string `json:"name"`
 	ShortName   string `json:"short"`
+	EnvName     string `json:"env"`
 	Default     string `json:"default"`
 	Description string `json:"description"`
 	Value       string `json:"value"`

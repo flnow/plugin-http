@@ -34,6 +34,7 @@ func RawData() []Field {
 		Field{
 			Display:     "HTTP Method",
 			Name:        "method",
+			EnvName:     "PLUGIN_METHOD",
 			ShortName:   "M",
 			Default:     "GET",
 			Description: "HTTP Method, default to GET",
@@ -45,6 +46,7 @@ func RawData() []Field {
 			Display:     "URL",
 			Name:        "url",
 			ShortName:   "U",
+			EnvName:     "PLUGIN_URL",
 			Description: "Call URL, start with http:// or https://",
 			Required:    true,
 			Type:        "string",
@@ -53,6 +55,7 @@ func RawData() []Field {
 		Field{
 			Display:     "Headers",
 			Name:        "headers",
+			EnvName:     "PLUGIN_HEADERS",
 			Description: "Request Headers, e.g. color=black",
 			Required:    false,
 			Type:        "string",
@@ -62,6 +65,7 @@ func RawData() []Field {
 			Display:     "Cookies",
 			Name:        "cookies",
 			ShortName:   "C",
+			EnvName:     "PLUGIN_COOKIES",
 			Description: "Request with cookies, e.g. name=jack",
 			Required:    false,
 			Type:        "string",
@@ -71,6 +75,7 @@ func RawData() []Field {
 			Display:     "Parameters",
 			Name:        "params",
 			ShortName:   "P",
+			EnvName:     "PLUGIN_PARAMS",
 			Description: "Reuqest with params, form/url params/post data",
 			Required:    false,
 			Type:        "string",
@@ -88,22 +93,33 @@ func init() {
 	rootCmd.Flags().StringSlice("headers", []string{}, "Request Headers, e.g. color=black")
 	rootCmd.Flags().StringSliceP("cookies", "C", []string{}, "Request with cookies, e.g. name=jack")
 	rootCmd.Flags().StringSliceP("params", "P", []string{}, "Reuqest with params, form/url params/post data")
-	rootCmd.MarkFlagRequired("url")
+	// rootCmd.MarkFlagRequired("url")
 }
 
 func initConfig() {
+	// load environment variables
+	viper.SetEnvPrefix("PLUGIN")
 	viper.AutomaticEnv()
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}
 }
 
 func run(cmd *cobra.Command, args []string) {
 	// required flags
-	method := cmd.Flag("method")
-	callURL := cmd.Flag("url")
+	method := viper.GetString("METHOD")
+	if len(method) == 0 {
+		method, _ = cmd.Flags().GetString("method")
+	}
+
+	callURL := viper.GetString("URL")
+	if len(callURL) == 0 {
+		callURL, _ = cmd.Flags().GetString("url")
+	}
+
 	postParam := url.Values{}
-	params, _ := cmd.Flags().GetStringSlice("params")
+	paramStr := viper.GetString("PARAMS")
+	params := strings.Split(paramStr, "&")
+	if len(paramStr) == 0 || len(params) == 0 {
+		params, _ = cmd.Flags().GetStringSlice("params")
+	}
 
 	// Posted data
 	for _, param := range params {
@@ -117,10 +133,15 @@ func run(cmd *cobra.Command, args []string) {
 
 	// Method URL Headers Cookies Params
 	client := &http.Client{}
-	req, err := http.NewRequest(method.Value.String(), callURL.Value.String(), strings.NewReader(postParam.Encode()))
+	req, err := http.NewRequest(method, callURL, strings.NewReader(postParam.Encode()))
 
 	// Cookies setting
-	cookies, _ := cmd.Flags().GetStringSlice("cookies")
+	cookieStr := viper.GetString("COOKIES")
+	cookies := strings.Split(cookieStr, "&")
+	if len(cookieStr) == 0 || len(cookies) == 0 {
+		cookies, _ = cmd.Flags().GetStringSlice("cookies")
+	}
+
 	for _, cookie := range cookies {
 		kvCookie := strings.SplitN(cookie, "=", 2)
 		if len(kvCookie) == 2 {
@@ -137,7 +158,11 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	// Headers setting
-	headers, _ := cmd.Flags().GetStringSlice("headers")
+	headerStr := viper.GetString("HEADERS")
+	headers := strings.Split(headerStr, "&")
+	if len(headerStr) == 0 || len(headers) == 0 {
+		headers, _ = cmd.Flags().GetStringSlice("headers")
+	}
 
 	for _, headerStr := range headers {
 		kvSlice := strings.SplitN(headerStr, "=", 2)
