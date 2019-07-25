@@ -123,6 +123,7 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	// Posted data
+	fmt.Println("params: ", params)
 	for _, param := range params {
 		kvParam := strings.SplitN(param, "=", 2)
 		if len(kvParam) == 2 {
@@ -137,8 +138,8 @@ func run(cmd *cobra.Command, args []string) {
 		Transport: &http.Transport{
 			MaxIdleConns: 10,
 			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-				MaxVersion:         tls.VersionTLS11,
+				// InsecureSkipVerify: true,
+				MaxVersion: tls.VersionTLS11,
 			},
 		},
 	}
@@ -147,6 +148,8 @@ func run(cmd *cobra.Command, args []string) {
 	// Cookies setting
 	cookieStr := viper.GetString("COOKIES")
 	cookies := strings.Split(cookieStr, "&")
+
+	fmt.Println("cookies: ", cookies)
 	if len(cookieStr) == 0 || len(cookies) == 0 {
 		cookies, _ = cmd.Flags().GetStringSlice("cookies")
 	}
@@ -173,6 +176,7 @@ func run(cmd *cobra.Command, args []string) {
 		headers, _ = cmd.Flags().GetStringSlice("headers")
 	}
 
+	fmt.Println("headers: ", headers)
 	for _, headerStr := range headers {
 		kvSlice := strings.SplitN(headerStr, "=", 2)
 		if len(kvSlice) == 2 {
