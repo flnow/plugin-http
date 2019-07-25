@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -132,7 +133,15 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	// Method URL Headers Cookies Params
-	client := &http.Client{}
+	client := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConns: 10,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+				MaxVersion:         tls.VersionTLS11,
+			},
+		},
+	}
 	req, err := http.NewRequest(method, callURL, strings.NewReader(postParam.Encode()))
 
 	// Cookies setting
@@ -186,6 +195,5 @@ func run(cmd *cobra.Command, args []string) {
 		log.Println(err)
 		return
 	}
-	// fmt.Println(resp.Header.Get("Content-Type"))
 	fmt.Println(string(body))
 }
